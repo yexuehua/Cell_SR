@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 import os
+from tqdm import tqdm
 
 
 def dye(img, color="red"):
@@ -22,20 +23,22 @@ def dye(img, color="red"):
 
 color_dict = {"red": 2, "green": 1, "blue": 0}
 # get the path of each images
-files_name = os.listdir("./data")
-files_path = [os.path.join("data", i) for i in files_name]
+files_name = os.listdir("./data/raw")
+files_path = [os.path.join("data/raw", i) for i in files_name]
 
-# read a image
-img_1 = cv2.imread(files_path[0])
-img_2 = cv2.imread(files_path[1])
+for i in tqdm(range(0, len(files_name)//3)):
+    # read a image
+    img_1 = cv2.imread(files_path[3*i])
+    img_2 = cv2.imread(files_path[3*i+1])
+    img_3 = cv2.imread(files_path[3*i+2])
 
-img_1 = dye(img_1, "blue")
-img_2 = dye(img_2,"green")
+    img_1 = dye(img_1, "blue")
+    img_2 = dye(img_2, "green")
+    img_3 = dye(img_3, "red")
 
-img_merge = img_1 + img_2
-# show the result
-cv2.imshow("a", img_merge)
-cv2.imshow("b", img_1)
-cv2.imshow("c", img_2)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+    img_merge = img_1 + img_2 + img_3
+    cv2.imwrite("data/overlay/"+str(i)+"_overlay.tif", img_merge)
+# # show the result
+# cv2.imshow("merge", img_merge)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
