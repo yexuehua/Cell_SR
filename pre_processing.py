@@ -4,7 +4,7 @@ import cv2
 import os
 from tqdm import tqdm
 
-
+scale = 2048
 def dye(img, color="red"):
     # get index of channel
     idx = color_dict[color]
@@ -20,25 +20,38 @@ def dye(img, color="red"):
 
     return img
 
-
+top_path = "./data/"+str(scale)+"/TimePoint_1"
 color_dict = {"red": 2, "green": 1, "blue": 0}
-# get the path of each images
-files_name = os.listdir("./data/raw")
-files_path = [os.path.join("data/raw", i) for i in files_name]
 
-for i in tqdm(range(0, len(files_name)//3)):
-    # read a image
-    img_1 = cv2.imread(files_path[3*i])
-    img_2 = cv2.imread(files_path[3*i+1])
-    img_3 = cv2.imread(files_path[3*i+2])
+# get the path of each images
+files_name = os.listdir(top_path)
+files_path = [os.path.join(top_path, i) for i in files_name]
+# get rid of the description file
+files_path = files_path[1:]
+
+# read and dye the grayscale image
+for i in tqdm(range(0, len(files_name)//4)):
+    # read a image to a grayscale
+    img_1 = cv2.imread(files_path[4*i+1], cv2.IMREAD_COLOR)
+    img_2 = cv2.imread(files_path[4*i+2], cv2.IMREAD_COLOR)
+    img_3 = cv2.imread(files_path[4*i+3], cv2.IMREAD_COLOR)
 
     img_1 = dye(img_1, "blue")
     img_2 = dye(img_2, "green")
     img_3 = dye(img_3, "red")
 
     img_merge = img_1 + img_2 + img_3
-    cv2.imwrite("data/overlay/"+str(i)+"_overlay.tif", img_merge)
-# # show the result
-# cv2.imshow("merge", img_merge)
+    if not os.path.exists("data/overlay"+str(scale)):
+        os.mkdir("data/overlay"+str(scale))
+    cv2.imwrite("data/overlay"+str(scale)+"/"+str(i)+"_overlay.tif", img_merge)
+
+# img = cv2.imread(files_path[0], cv2.IMREAD_COLOR)
+# # img = dye(img, "green")
+# clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+# img[:,:,2] = clahe.apply(img[:,:,2])
+# img[:,:,0] = 0
+# img[:,:,1] = img[:,:,2]
+# show the result
+# cv2.imshow("merge", img)
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()
