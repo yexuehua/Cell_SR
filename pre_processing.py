@@ -20,9 +20,20 @@ def dye(img, color="red"):
 
     return img
 
-top_path = "./data/"+str(scale)+"/TimePoint_1"
+# top_path = "./data/"+str(scale)+"/TimePoint_1"
+path = r"C:\Users\212774000\Documents\python\gitclone\SR\Cell_SR\example"
 color_dict = {"red": 2, "green": 1, "blue": 0}
 
+img_b = cv2.imread(os.path.join(path,"4Xoverlay_b.png"))
+img_g = cv2.imread(os.path.join(path,"4Xoverlay_g.png"))
+img_r = cv2.imread(os.path.join(path,"4Xoverlay_r.png"))
+img_b = dye(img_b,"blue")
+img_g = dye(img_g,"green")
+img_r = dye(img_r,"red")
+img_merge = img_b+img_r+img_g
+cv2.imwrite("4xoverlay_merge.png",img_merge)
+
+'''
 # get the path of each images
 files_name = os.listdir(top_path)
 files_path = [os.path.join(top_path, i) for i in files_name]
@@ -55,3 +66,4 @@ for i in tqdm(range(0, len(files_name)//4)):
 # cv2.imshow("merge", img)
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()
+'''
