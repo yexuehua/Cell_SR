@@ -39,18 +39,36 @@ def parenthesis(string):
                 temp.pop(-1)
     # if len(temp)== 0
 
+# run out of time
 def coinChange(coins, amount):
+    if amount == 0:
+        return 0
     for i in range(len(coins)):
-        if amount == i:
+        if coins[i] == amount:
             return 1
         if amount < 0:
             return -1
-    min_count = coinChange(coins, amount - coins[0])
+    max_count = coinChange(coins, amount - coins[0])
     for i in range(1, len(coins)):
-        if (coinChange(coins, amount - coins[i]) < min_count) and (coinChange(coins,amount-coins[i])>0):
-            max_count = coinChange[i]
+        if 0 < coinChange(coins, amount - coins[i]) < max_count:
+            max_count = coinChange(coins, amount - coins[i])
     if max_count + 1 <= 0:
         return -1
     else:
         return max_count + 1
-print(coinChange([1,2,5],11))
+#print(coinChange([1,2,11],5))
+
+# dp array
+def change_coin2(coin,amount):
+    dp = [float("inf")]*(amount+1)
+    dp[0] = 0
+    for c in coin:
+        for i in range(c,amount+1):
+            dp[i] = min(dp[i],dp[i-coin]+1)
+    return dp[amount] if dp[amount] != float("inf") else -1
+# print(change_coin2([1,2,11],5))
+
+listA = [1,[2,3,4],5]
+listB = copy.deepcopu
+listB[1][0]=8
+print(listA)
