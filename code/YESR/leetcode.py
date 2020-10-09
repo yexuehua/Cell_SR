@@ -68,7 +68,48 @@ def change_coin2(coin,amount):
     return dp[amount] if dp[amount] != float("inf") else -1
 # print(change_coin2([1,2,11],5))
 
-listA = [1,[2,3,4],5]
-listB = copy.deepcopu
-listB[1][0]=8
-print(listA)
+# listA = [1,[2,3,4],5]
+# listB = copy.deepcopu
+# listB[1][0]=8
+# print(listA)
+
+def stack_edit():
+    print("please input:")
+    s = input()
+    result = []
+    for i in s:
+        if len(result)>0:
+            if result[-1] == "(":
+                if i == "(":
+                    result.append(i)
+                if i == ")":
+                    result.pop()
+                continue
+        if i == "<":
+            result.pop()
+            continue
+        result.append(i)
+    print(''.join(result))
+
+
+def LIS(nums):
+    print("please input:")
+    # s = input()
+    s = nums
+    n = len(s)
+    dp = n*[1]
+    for i in range(n):
+        for j in range(i):
+            if s[i] > s[j]:
+                dp[i] = max(dp[j] + 1,dp[i])
+                print(dp)
+    return max(dp) if n != 0 else 0
+
+# out = LIS([1,3,6,7,9,4,10,5,6])
+# print(out)
+
+def test_unpack(a,b,c):
+    print(a,b,c)
+
+a = [2,3,4]
+test_unpack(*a)

@@ -96,6 +96,48 @@ class VAE(nn.Module):
         z = coding_mean + std * noise
         return self.decoder(z),coding_mean,coding_gama
 
+
+class _Residual_Block(nn.Module):
+    def __init__(self, inc=64, outc=64):
+        super(_Residual_Block, self).__init__()
+
+        self.inc = inc
+        self.outc = outc
+
+        if inc is not outc:
+            self.conv_expand  = nn.Conv2d(in_channels=self.inc, out_channels=self.outc, kernel_size=1, stride=1,
+                                          padding=0, bias=False)
+        else:
+            self.conv_expand = None
+
+        self.conv1 = nn.Conv2d(in_channels=self.inc, out_channels=self.outc, kernel_size=3, stride=1, padding=1,
+                               bias=False)
+        self.relu1 = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(in_channels=self.inc, out_channels=self.outc, kernel_size=3, stride=1, padding=1,
+                               bias=False)
+        self.relu2 = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        if self.conv_expand is not None:
+            identity_data = self.conv_expand(x)
+        else:
+            identity_data = x
+
+        output = self.relu1(self.conv1(x))
+        output = self.relu2(torch.add(self.conv2(x),identity_data))
+        return output
+
+
+class Conv_Net(nn.Module):
+    def __init__(self,scale=2):
+        super(Conv_Net, self).__init__()
+
+        self.scale = scale
+
+        # part 1 ======================== Convolution layers =============================
+        # sub-part 1.1 ==== input ===
+
+
 '''
 class WaveletTransd(nn.Module):
     def __int__(self, scale=1, dec=True, para_path='wavelet_weights_c2.pkl', transpose=True):
