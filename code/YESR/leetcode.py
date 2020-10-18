@@ -111,5 +111,92 @@ def LIS(nums):
 def test_unpack(a,b,c):
     print(a,b,c)
 
-a = [2,3,4]
-test_unpack(*a)
+# a = [2,3,4]
+# test_unpack(*a)
+
+class Solution:
+    def key_and_room(self, rooms):
+        n = len(rooms)
+        flag = [0] * n
+        flag[0] = 1
+        self.enter_room(rooms, rooms[0], flag)
+        print(flag)
+        return True if sum(flag) == n else False
+
+
+    def enter_room(self, rooms, keys, flag):
+        for key in keys:
+            if flag[key] == 1:
+                continue
+            flag[key] = 1
+            self.enter_room(rooms, rooms[key], flag)
+
+# so = Solution()
+# print(so.key_and_room([[1,3],[1,4],[2,3,2,4,1],[],[4,3,2]]))MMMM
+# MMFF
+# FMMM
+# MMMM
+# MFMM
+
+
+def violate_solution():
+    m,n = list(map(int,input().split()))
+    array = []
+    for i in range(m):
+        array.append(list(input()))
+
+
+    def find_max(array, i, j, m, n):
+        max_n = 0
+        max_m = 0
+        while(i<n):
+            if array[i] == "F":
+                break
+            max_n += 1
+            i += 1
+        while(j<m):
+            if array[j] == "F":
+                break
+            max_m += 1
+            j = j+1
+        return min(max_n,max_m)
+
+
+    visit = [[0]*n for _ in range(m)]
+    max_s = 0
+    for i in range(m):
+        for j in range(n):
+            if visit[i] == 1:
+                continue
+            visit[i][j] = 1
+            max_s = max(max_s,find_max(array,i, j, m,n))
+    print(max_s)
+
+
+def max_squre(array):
+    '''
+    dp[i][j] = max(dp[i-1][j], dp[i-1][j-1], dp[i][j-1])+1
+    :param array:
+    :return:
+    '''
+    m,n = len(array), len(array[0])
+    dp = [[0]*n for _ in range(m)]
+    # bounding problem
+    for i in range(m):
+        if array[i][0] == "M":
+            dp[i][0] = 1
+
+    for j in range(n):
+        if array[0][j] == "M":
+            dp[0][j] = 1
+
+    for i in range(m):
+        for j in range(n):
+            if (array[i][j] == "F"):
+                continue
+            dp[i][j] = max(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]) + 1
+    return max(dp)**2
+
+#print(max_squre())
+a = [[4,2],[2,30]]
+print(max(a))
