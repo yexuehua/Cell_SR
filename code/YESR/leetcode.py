@@ -198,5 +198,48 @@ def max_squre(array):
     return max(dp)**2
 
 #print(max_squre())
-a = [[4,2],[2,30]]
-print(max(a))
+# a = [[4,2],[2,30]]
+# print(max(a))
+
+def q3():
+    n = int(input())
+    all_will = []
+    market = [0] * (n+1)
+    dst = [0] * (n+1)
+    for i in range(n):
+        one_will = list(map(int, input().split(' ')))
+        all_will.append(one_will)
+    for idx, will in enumerate(all_will):
+        for j in will:
+            print(j)
+            if market[j - 1] != 0:
+                continue
+            elif market[j - 1] == 0:
+                dst[idx+1] = j
+                market[j - 1] = 1
+                break
+    print(dst[1:])
+
+
+
+def q2():
+    import sys
+    m, n = list(map(int, input().split(" ")))
+    sequence = list(map(int, input().split(" ")))
+    num = 1
+    def up(s):
+        n = len(s)
+        for i in range(n - 1):
+            if s[i + 1] - s[i] < 0:
+                return False
+        return True
+
+    for l in range(1, m + 1):
+        for r in range(l, m + 1):
+            l_s = [i for i in sequence if 0 < i < l]
+            r_s = [i for i in sequence if r < i < m + 1]
+            if up(l_s) and up(r_s):
+                num += 1
+    print(num)
+
+q2()
