@@ -97,6 +97,7 @@ class VAE(nn.Module):
         return self.decoder(z),coding_mean,coding_gama
 
 
+# EDSR mentioned: no need to the BN for the whole block and relu for the last layer
 class _Residual_Block(nn.Module):
     def __init__(self, inc=64, outc=64):
         super(_Residual_Block, self).__init__()
@@ -115,7 +116,6 @@ class _Residual_Block(nn.Module):
         self.relu1 = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv2d(in_channels=self.inc, out_channels=self.outc, kernel_size=3, stride=1, padding=1,
                                bias=False)
-        self.relu2 = nn.ReLU(inplace=True)
 
     def forward(self, x):
         if self.conv_expand is not None:
@@ -123,16 +123,88 @@ class _Residual_Block(nn.Module):
         else:
             identity_data = x
 
-        output = self.relu1(self.conv1(x))
-        output = self.relu2(torch.add(self.conv2(x),identity_data))
+        x = self.relu1(self.conv1(x))
+        output = torch.add(self.conv2(x), identity_data)
         return output
 
 
+def _phase_shift(I, r):
+    n, c, a, b = I.size()
+    X = torch.reshape(I,(n, r, r, a, b))
+
+    # X -> a x (n, r, r, 1, b)
+    X = torch.split(X, a, 3)
+    # X -> (n, a*r, r, b)
+    X = torch.cat([torch.squeeze(i, dim=3) for i in X], 1)
+    # X -> b x (n, a*r, r, 1)
+    X = torch.split(X, b, 3)
+    # X -> (n, a*r, b*r)
+    X = torch.cat([torch.squeeze(i, dim=3) for i in X], 2)
+    return torch.reshape(X, (n, 1, a*r, b*r))
+
+
+def PS(x, r):
+    Xc = torch.split(x, 3, 3)
+    X = torch.cat([_phase_shift(x, r) for x in Xc], 1)
+    return X
+
+
+class upsample(nn.Module):
+    def __init__(self, scale, inc, feature=64):
+        super(upsample, self).__init__()
+
+        self.scale = scale
+        self.inc = inc
+        self.feature = feature
+
+        self.conv1 = nn.Conv2d(in_channels=self.inc, out_channels=self.feature, kernel_size=3, padding=1, bias=False)
+        self.relu1 = nn.ReLU(inplace=True)
+
+        # upsample
+        if self.scale == 2:
+            ps_feature = self.scale**2
+            self.conv2_x2 = nn.Conv2d(in_channels=self.feature, out_channels=ps_feature, kernel_size=3, padding=1,
+                                     bias=False)
+            self.relu2_x2 = nn.ReLU(inplace=True)
+
+        if self.scale == 3:
+            ps_feature = self.scale**2
+            self.conv2_x3 = nn.Conv2d(in_channels=self.feature, out_channels=ps_feature, kernel_size=3, padding=1,
+                                     bias=False)
+            self.relu2_3 = nn.ReLU(inplace=True)
+
+        if self.scale == 4:
+            ps_feature = self.scale**2
+            self.conv2_x4 = nn.Conv2d(in_channels=self.feature, out_channels=ps_feature, kernel_size=3, padding=1,
+                                     bias=False)
+            self.relu2_4 = nn.ReLU(inplace=True)
+
+
+    def forward(self, x):
+        x = self.relu1(self.conv1(x))
+        if self.scale == 2:
+            x = self.relu2_x2(self.conv2_x2(x))
+            x = PS(x, 2)
+
+        if self.scale == 3:
+            x = self.relu2_x3(self.conv2_x3(x))
+            x = PS(x, 3)
+
+        #if self.scale == 4:
+        #    x = self.relu2_x4(self.conv2_x4(x))
+        #    x = PS(x, 2)
+        return x
+
+
+
 class Conv_Net(nn.Module):
-    def __init__(self,scale=2):
+    def __init__(self, scale, num_layers, img_size):
         super(Conv_Net, self).__init__()
 
         self.scale = scale
+        self.num_layers = num_layers
+
+
 
         # part 1 ======================== Convolution layers =============================
         # sub-part 1.1 ==== input ===
