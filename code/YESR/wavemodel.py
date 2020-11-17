@@ -97,6 +97,7 @@ class VAE(nn.Module):
         return self.decoder(z),coding_mean,coding_gama
 
 
+# EDSR mentioned: no need to the BN for the whole block and relu for the last layer
 class _Residual_Block(nn.Module):
     def __init__(self, inc=64, outc=64):
         super(_Residual_Block, self).__init__()
@@ -115,7 +116,6 @@ class _Residual_Block(nn.Module):
         self.relu1 = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv2d(in_channels=self.inc, out_channels=self.outc, kernel_size=3, stride=1, padding=1,
                                bias=False)
-        self.relu2 = nn.ReLU(inplace=True)
 
     def forward(self, x):
         if self.conv_expand is not None:
@@ -124,15 +124,35 @@ class _Residual_Block(nn.Module):
             identity_data = x
 
         output = self.relu1(self.conv1(x))
-        output = self.relu2(torch.add(self.conv2(x),identity_data))
+        output = torch.add(self.conv2(x),identity_data)
         return output
+
+class upsample(nn.Module):
+    def __init__(self, scale, inc, outc):
+        super(upsample, self).__init__()
+
+        self.scale = scale
+        self.inc = inc
+        self.outc = outc
+
+        self.conv1 = nn.Conv2d(in_channels=self.inc, out_channels=self.outc, kernel_size=3, padding=1, bias=False)
+        self.relu1 = nn.ReLU(inplace=True)
+        if self.scale == 2:
+
+
+
+
+
 
 
 class Conv_Net(nn.Module):
-    def __init__(self,scale=2):
+    def __init__(self, scale, num_layers):
         super(Conv_Net, self).__init__()
 
         self.scale = scale
+        self.num_layers = num_layers
+
+
 
         # part 1 ======================== Convolution layers =============================
         # sub-part 1.1 ==== input ===
