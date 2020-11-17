@@ -198,7 +198,7 @@ class upsample(nn.Module):
 
 
 class Conv_Net(nn.Module):
-    def __init__(self, scale, num_layers, img_size):
+    def __init__(self, scale, num_layers):
         super(Conv_Net, self).__init__()
 
         self.scale = scale
