@@ -6,7 +6,6 @@ import os
 from scipy import misc
 import time
 
-
 #super resolution using NN model
 '''
 parser = argparse.ArgumentParser()
