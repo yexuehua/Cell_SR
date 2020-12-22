@@ -76,25 +76,26 @@ class VAE(nn.Module):
             nn.Linear(hidden1, hidden2),
             nn.LeakyReLU(0.2)
         )
-        self.mean_sigma = nn.Linear(hidden2, z_dim)
+        self.mean = nn.Linear(hidden2, z_dim)
+        self.sigma = nn.Linear(hidden2, z_dim)
         self.decoder = nn.Sequential(
             nn.Linear(z_dim, self.hidden4),
             nn.LeakyReLU(0.2),
-            nn.Linear(self.hidden4,self.hidden5),
+            nn.Linear(self.hidden4, self.hidden5),
             nn.LeakyReLU(0.2),
-            nn.Linear(self.hidden5,self.output),
+            nn.Linear(self.hidden5, self.output),
             nn.Sigmoid()
         )
 
 
     def forward(self,x):
         en = self.encoder(x)
-        coding_mean = self.mean_sigma(en)
-        coding_gama = self.mean_sigma(en)
-        std = coding_gama.mul(0.5).exp_()
+        coding_mean = self.mean(en)
+        coding_sigama = self.sigma(en)
+        std = coding_sigama.mul(0.5).exp_()
         noise = torch.autograd.Variable(torch.randn(*coding_mean.size()))
         z = coding_mean + std * noise
-        return self.decoder(z),coding_mean,coding_gama
+        return self.decoder(z), coding_mean, coding_sigama
 
 
 # EDSR mentioned: no need to the BN for the whole block and relu for the last layer
@@ -211,54 +212,17 @@ class Conv_Net(nn.Module):
         if scale == 2:
             self.up = upsample(2, 64)
         if scale == 3:
+            self.up = upsample(3, 64)
+        if scale == 4:
+            self.up = upsample(4, 64)
 
     def forward(self, x):
+        inImage = x
         x = self.relu1(self.conv1(x))
         for _ in range(self.num_layers):
             x = self.res(x)
-        x = self.relu2(self.conv2(x))
+        x = torch.add(self.relu2(self.conv2(x)), inImage)
+        x = self.up(x)
 
-
-'''
-class WaveletTransd(nn.Module):
-    def __int__(self, scale=1, dec=True, para_path='wavelet_weights_c2.pkl', transpose=True):
-        super(WaveletTransd, self).__init__()
-
-        self.scale = scale
-        self.dec = dec
-        #self.para_path = para_path
-        self.transpose = transpose
-
-        ks = int(math.pow(2, self.scale))
-        nc = 3 * ks * ks
-
-        if self.dec:
-            self.conv = nn.Conv2d(in_channels=3, out_channels=nc, kernel_size=ks, stride=ks, padding=0,groups=3,
-                                  bias=False)
-        else:
-            self.conv = nn.ConvTranspose2d(in_channels=nc, out_channels=3, kernel_size=ks, stride=ks, padding=0,
-                                           groups=3, bias=False)
-
-        for m in self.modules():
-            if isinstance(m,nn.Conv2d) or isinstance(m,nn.ConvTranspose2d):
-                with open(para_path,"rb") as f:
-                    dct =pickle.load(f,encoding="latin1")
-                m.weight.data = torch.from_numpy(dct['rec%d' % ks])
-                m.weight.requires_grad = False
-
-    def forward(self, x):
-        if self.dec:
-            output = self.conv(x)
-            if self.transpose:
-                osz =output.size()
-                output = output.view(osz[0], 3, -1, osz[2], osz[3]).transpose(1,2).contiguous().view(osz)
-        else:
-            if self.transpose:
-                xx = x
-                xsz = xx.size()
-                xx = xx.view(xsz[0], -1, 3, xsz[2], xsz[3]).transpose(1,2).contiguous().view(xsz)
-            output = self.conv(xx)
-
-        return output
-'''
+        return x
 
