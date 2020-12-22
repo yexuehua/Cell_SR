@@ -190,9 +190,9 @@ class upsample(nn.Module):
             x = self.relu2_x3(self.conv2_x3(x))
             x = PS(x, 3)
 
-        #if self.scale == 4:
-        #    x = self.relu2_x4(self.conv2_x4(x))
-        #    x = PS(x, 2)
+        if self.scale == 4:
+           x = self.relu2_x4(self.conv2_x4(x))
+           x = PS(x, 4)
         return x
 
 
@@ -203,11 +203,20 @@ class Conv_Net(nn.Module):
 
         self.scale = scale
         self.num_layers = num_layers
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, padding=1, bias=False)
+        self.relu1 = nn.ReLU(inplace=True)
+        self.res = _Residual_Block(inc=64, outc=64)
+        self.conv2 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, padding=1, bias=False)
+        self.relu2 = nn.ReLU(inplace=True)
+        if scale == 2:
+            self.up = upsample(2, 64)
+        if scale == 3:
 
-
-
-        # part 1 ======================== Convolution layers =============================
-        # sub-part 1.1 ==== input ===
+    def forward(self, x):
+        x = self.relu1(self.conv1(x))
+        for _ in range(self.num_layers):
+            x = self.res(x)
+        x = self.relu2(self.conv2(x))
 
 
 '''
