@@ -50,7 +50,7 @@ class ImageDatasetFromFile(data.Dataset):
         lr_path = join(self.root_path,self.lr_lists[item])
         hr_path = join(self.root_path,self.hr_lists[item])
         lr,hr = load_image(lr_path, hr_path)
-        lr_img,hr_target = my_transfroms(lr, hr, crop_size=(100,100))
+        lr_img,hr_target = my_transfroms(lr, hr, crop_size=(100,100), scale=2)
 
         return lr_img, hr_target
 

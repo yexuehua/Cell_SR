@@ -223,6 +223,5 @@ class Conv_Net(nn.Module):
             x = self.res(x)
         x = torch.add(self.relu2(self.conv2(x)), inImage)
         x = self.up(x)
-
         return x
 
